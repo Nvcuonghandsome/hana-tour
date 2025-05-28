@@ -1,0 +1,15 @@
+**/node_modules/
+**/dist/
+
+.env
+admin-page/.env.local
+admin-page/.env.development
+admin-page/.env.production
+server/.env
+
+admin-page/.next
+
+.DS_Store
+Thumbs.db
+
+.vscode/

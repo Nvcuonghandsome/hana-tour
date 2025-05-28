@@ -1,0 +1,50 @@
+// Run "npx prisma migrate dev" to import structure change to DB
+// Run "npx prisma generate" to generate prisma client model interface
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    String      @id   @default(uuid())
+  email     String @unique
+  role Role @default(User)
+  firstName String
+  lastName String
+  password      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  tours Tour[]
+  hashedRt String?
+
+  @@map("users")
+}
+
+model Tour {
+  id    String      @id   @default(uuid())
+  name  String
+  description String
+  imageUrl String
+  imagePublicId String
+  location String
+  price    Float
+  duration Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  userId String
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("tours")
+}
+
+enum Role {
+  Admin
+  User
+}
