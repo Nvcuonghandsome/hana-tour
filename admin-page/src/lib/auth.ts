@@ -27,14 +27,14 @@ const refreshTokens = async (token: JWT): Promise<JWT> => {
         accessToken: res.data.accessToken,
         refreshToken: res.data.refreshToken,
         expiresIn: res.data.expiresIn,
+        expiresInFormat: res.data.expiresInFormat,
       },
     };
     console.log('refreshTokens new token', result);
 
     return result;
   } catch (error) {
-    // console.error('Error in refreshTokens:', error);
-    // throw new Error('RefreshTokenError');
+    console.error('refreshTokens error', error);
     return {
       ...token,
       error: 'RefreshTokenError',
@@ -60,17 +60,25 @@ export const authOptions: NextAuthOptions = {
             },
           );
 
-          const { user, accessToken, refreshToken, expiresIn } = res.data;
+          const {
+            user,
+            accessToken,
+            refreshToken,
+            expiresIn,
+            expiresInFormat,
+          } = res.data;
           if (user && accessToken && refreshToken && expiresIn) {
             return {
               ...user,
               accessToken,
               refreshToken,
               expiresIn,
+              expiresInFormat,
             };
           }
           return null;
         } catch (error) {
+          console.log('error', error);
           return null;
         }
       },
@@ -78,8 +86,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      console.log('callbacks jwt token', token);
-      console.log('callbacks jwt user', user);
+      console.log('callbacks jwt token on', new Date(), 'token', token);
       if (user) {
         token.user = user;
         token.accessToken = user.accessToken;
@@ -94,7 +101,8 @@ export const authOptions: NextAuthOptions = {
       } catch (error) {
         return {
           ...token,
-          error: 'RefreshTokenError',
+          error: 'RefreshTokenError catch',
+          errorObj: error,
         };
       }
     },
@@ -102,7 +110,6 @@ export const authOptions: NextAuthOptions = {
       session.user = token.user;
       session.accessToken = token.accessToken;
       session.error = token.error;
-      console.log('session', session);
       return session;
     },
   },

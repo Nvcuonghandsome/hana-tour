@@ -2,13 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { fetchTours } from '@/lib/api';
 
 const DashboardPage = () => {
-  const { data: session } = useSession();
-  // console.log('session', session);
   const router = useRouter();
 
   const {
@@ -17,8 +14,7 @@ const DashboardPage = () => {
     isError,
   } = useQuery({
     queryKey: ['tours'],
-    queryFn: () => fetchTours(session?.accessToken || ''),
-    enabled: !!session?.accessToken, // wait until token exists
+    queryFn: () => fetchTours(),
   });
 
   const goToTourDetail = (tourId: string) => {

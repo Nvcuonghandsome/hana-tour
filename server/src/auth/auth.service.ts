@@ -30,7 +30,6 @@ export class AuthService {
       });
 
       const data = await this.signTokens(newsUser);
-      await this.updateRefreshToken(newsUser.id, data.refreshToken);
       return data;
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
@@ -53,7 +52,6 @@ export class AuthService {
     if (!isPwdMatch) throw new ForbiddenException('Invalid credentials');
 
     const data = await this.signTokens(user);
-    await this.updateRefreshToken(user.id, data.refreshToken);
     return data;
   }
 
@@ -76,18 +74,17 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
-    console.log('refreshTokens rt', rt);
-    console.log('refreshTokens user', user);
     if (!user || !user.hashedRt)
       throw new ForbiddenException('User not found! Access denied');
 
     const isRtMatch = await argon.verify(user.hashedRt, rt);
-    console.log('refreshTokens isRtMatch', isRtMatch);
-    if (!isRtMatch)
+    if (!isRtMatch) {
+      // console.log('[RefreshToken Not Match] user.hashedRt', user.hashedRt);
+      // console.log('[RefreshToken Not Match] rt', rt);
       throw new ForbiddenException('Refresh Token not matched! Access denied');
+    }
 
     const data = await this.signTokens(user);
-    await this.updateRefreshToken(user.id, data.refreshToken);
     return data;
   }
 
@@ -95,6 +92,7 @@ export class AuthService {
     accessToken: string;
     refreshToken: string;
     expiresIn: number;
+    expiresInFormat: string;
     user: Partial<User>;
   }> {
     const data = {
@@ -114,14 +112,17 @@ export class AuthService {
       expiresIn: refreshTokenTtl,
       secret: secretRefreshToken,
     });
+    await this.updateRefreshToken(user.id, refreshToken);
 
-    const expiresIn = new Date().getTime() + 1000 * 5; // 5s
-    // const expiresIn = new Date().getTime() + 1000 * 60 * 60; // 1h
+    // const expiresIn = new Date().getTime() + 1000 * 5; // 5s
+    const expiresIn = new Date().getTime() + 1000 * 60 * 60; // 1h
+    const expiresInFormat = new Date(expiresIn).toISOString();
 
     return {
       accessToken,
       refreshToken,
       expiresIn,
+      expiresInFormat,
       user: {
         id: user.id,
         email: user.email,

@@ -48,6 +48,7 @@ const CreateTour = () => {
     try {
       createNewTour(formData);
     } catch (error) {
+      console.log('error', error);
       alert('Failed to create tour');
     } finally {
     }

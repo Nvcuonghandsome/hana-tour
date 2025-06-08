@@ -44,11 +44,11 @@ export class updateTourDto {
   @IsNotEmpty()
   location: string;
 
-  @IsNumberString()
+  @IsNumber()
   @IsNotEmpty()
   price: string;
 
-  @IsNumberString()
+  @IsNumber()
   @IsNotEmpty()
   duration: string;
 }

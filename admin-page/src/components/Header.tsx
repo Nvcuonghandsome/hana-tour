@@ -10,7 +10,7 @@ const Header = () => {
   const handleLogout = async () => {
     try {
       // Logout from the API
-      await logout(session?.accessToken || '');
+      await logout();
 
       // Sign out from NextAuth
       await signOut({ callbackUrl: '/login' }); // Optional: redirect after logout

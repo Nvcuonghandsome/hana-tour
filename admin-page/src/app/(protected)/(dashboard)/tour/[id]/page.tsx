@@ -19,8 +19,7 @@ const TourDetailPage = () => {
 
   const { data: tour, isLoading } = useQuery({
     queryKey: ['tour', id],
-    queryFn: () => fetchTour(id, session?.accessToken || ''),
-    enabled: !!session?.accessToken,
+    queryFn: () => fetchTour(id),
   });
 
   const {
@@ -33,11 +32,14 @@ const TourDetailPage = () => {
   });
 
   const { mutate: saveChanges } = useMutation({
-    mutationFn: (data: TourFormData) =>
-      updateTour({ id, data, token: session?.accessToken || '' }),
+    mutationFn: (data: TourFormData) => updateTour({ id, data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tour', id] });
       alert('Tour updated!');
+    },
+    onError: (error) => {
+      console.log('error update tour', error);
+      alert('Tour updated failed!');
     },
   });
 
@@ -53,11 +55,11 @@ const TourDetailPage = () => {
         await uploadTourImage({
           id,
           file: selectedFile,
-          token: session?.accessToken || '',
         });
       }
       router.push(`/`);
     } catch (error) {
+      console.log('error', error);
       alert('Something went wrong. Please try again.');
     } finally {
       setUploading(false);

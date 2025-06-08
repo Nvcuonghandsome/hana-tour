@@ -1,20 +1,36 @@
 import { Tour } from '@/types/tour';
 import axios from 'axios';
 import { TourFormData } from './schemas';
+import { getSession, signOut } from 'next-auth/react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-export const fetchTours = async (token: string): Promise<Tour[]> => {
-  const res = await axios.get(`${API_BASE}/tour/list`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+});
+
+// Have issue focus on other tab and comeback to website -> error Session expired
+api.interceptors.request.use(async (config) => {
+  const session = await getSession();
+  // console.log('getSession', session);
+  if (!session || session.error === 'RefreshTokenError') {
+    await logoutById(session?.user?.id || '');
+    await signOut({ callbackUrl: '/login' });
+    console.error('Session expired', session);
+    return Promise.reject('Session expired');
+  }
+
+  config.headers.Authorization = `Bearer ${session.accessToken}`;
+  return config;
+});
+
+export const fetchTours = async (): Promise<Tour[]> => {
+  const res = await api.get(`${API_BASE}/tour/list`);
   return res.data.data;
 };
 
-export const fetchTour = async (id: string, token: string) => {
-  const res = await axios.get(`${API_BASE}/tour/detail/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export const fetchTour = async (id: string) => {
+  const res = await api.get(`${API_BASE}/tour/detail/${id}`);
   return res.data.data;
 };
 
@@ -33,49 +49,28 @@ export const createTour = async ({
 export const updateTour = async ({
   id,
   data,
-  token,
 }: {
   id: string;
   data: TourFormData;
-  token: string;
 }) => {
-  await axios.put(
-    `${API_BASE}/tour/update`,
-    { tourId: id, ...data },
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    },
-  );
+  await api.put(`${API_BASE}/tour/update`, { tourId: id, ...data });
 };
 
 export const uploadTourImage = async ({
   id,
   file,
-  token,
 }: {
   id: string;
   file: File;
-  token: string;
 }) => {
   const formData = new FormData();
   formData.append('image', file);
 
-  await axios.post(`${API_BASE}/tour/upload-image/${id}`, formData, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  await api.post(`${API_BASE}/tour/upload-image/${id}`, formData);
 };
 
-export const logout = async (token: string) => {
-  await axios.post(
-    `${API_BASE}/auth/logout`,
-    {},
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    },
-  );
+export const logout = async () => {
+  await api.post(`${API_BASE}/auth/logout`);
 };
 export const logoutById = async (userId: string) => {
   await axios.post(`${API_BASE}/auth/logout-by-id`, { userId });
