@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react';
 import { createTour } from '@/lib/api';
 import { CreateTourFormData, createTourSchema } from '@/lib/schemas';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 
 const CreateTour = () => {
   const { data: session } = useSession();
@@ -18,11 +19,13 @@ const CreateTour = () => {
       createTour({ data, token: session?.accessToken || '' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tours'] });
-      alert('Tour created!');
+      toast.success('Tour created successfully!');
       router.push('/');
     },
-    onError: () => {
-      alert('Failed to create tour');
+    onError: (error) => {
+      toast.error(
+        `Failed to create tour: ${error?.message || 'Create tour error'}`,
+      );
     },
   });
 

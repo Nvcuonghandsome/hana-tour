@@ -8,6 +8,7 @@ import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { fetchTour, updateTour, uploadTourImage } from '@/lib/api';
 import { TourFormData, tourSchema } from '@/lib/schemas';
+import { toast } from 'react-toastify';
 
 const TourDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,11 +36,11 @@ const TourDetailPage = () => {
     mutationFn: (data: TourFormData) => updateTour({ id, data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tour', id] });
-      alert('Tour updated!');
+      toast.success('Tour updated successfully!');
     },
     onError: (error) => {
       console.log('error update tour', error);
-      alert('Tour updated failed!');
+      toast.error('Tour updated failed!');
     },
   });
 
