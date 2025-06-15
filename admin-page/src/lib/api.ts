@@ -1,6 +1,5 @@
 import { Tour } from '@/types/tour';
 import axios from 'axios';
-import { TourFormData } from './schemas';
 import { getSession, signOut } from 'next-auth/react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -16,7 +15,7 @@ api.interceptors.request.use(async (config) => {
   if (!session || session.error === 'RefreshTokenError') {
     await logoutById(session?.user?.id || '');
     await signOut({ callbackUrl: '/login' });
-    console.error('Session expired', session);
+    // console.error('Session expired', session);
     return Promise.reject('Session expired');
   }
 
@@ -29,44 +28,17 @@ export const fetchTours = async (): Promise<Tour[]> => {
   return res.data.data;
 };
 
-export const fetchTour = async (id: string) => {
+export const fetchTour = async (id: string): Promise<Tour> => {
   const res = await api.get(`${API_BASE}/tour/detail/${id}`);
   return res.data.data;
 };
 
-export const createTour = async ({
-  data,
-  token,
-}: {
-  data: FormData;
-  token: string;
-}) => {
-  await axios.post(`${API_BASE}/tour/create`, data, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export const createTour = async ({ data }: { data: FormData }) => {
+  await api.post(`${API_BASE}/tour/create`, data);
 };
 
-export const updateTour = async ({
-  id,
-  data,
-}: {
-  id: string;
-  data: TourFormData;
-}) => {
-  await api.put(`${API_BASE}/tour/update`, { tourId: id, ...data });
-};
-
-export const uploadTourImage = async ({
-  id,
-  file,
-}: {
-  id: string;
-  file: File;
-}) => {
-  const formData = new FormData();
-  formData.append('image', file);
-
-  await api.post(`${API_BASE}/tour/upload-image/${id}`, formData);
+export const updateTour = async ({ data }: { data: FormData }) => {
+  await api.put(`${API_BASE}/tour/update`, data);
 };
 
 export const logout = async () => {

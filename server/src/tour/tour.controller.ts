@@ -28,14 +28,19 @@ export class TourController {
     @Body() body: createTourDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    console.log('create tour body', { ...body, file: file });
+    // console.log('create tour body', { ...body, file: file });
     return this.tourService.createTour(userId, body, file);
   }
 
   @UseGuards(RolesGuard)
   @Put('update')
-  updateTour(@Body() body: updateTourDto) {
-    return this.tourService.updateTour(body);
+  @UseInterceptors(FileInterceptor('image'))
+  updateTour(
+    @Body() body: updateTourDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    // console.log('update tour body', { body, file: file });
+    return this.tourService.updateTour(body, file);
   }
 
   @Get('detail/:tourId')

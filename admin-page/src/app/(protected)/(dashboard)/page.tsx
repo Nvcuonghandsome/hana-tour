@@ -36,19 +36,29 @@ const DashboardPage = () => {
       {isLoading && <p>Loading tours...</p>}
       {isError && <p className="text-red-500">Failed to load tours.</p>}
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {tours?.map((tour) => (
           <div
             onClick={() => goToTourDetail(tour.id)}
             key={tour.id}
-            className="border p-4 rounded shadow-sm cursor-pointer"
+            className="flex items-start justify-between border p-4 rounded shadow-sm cursor-pointer"
           >
-            <h3 className="text-lg font-bold">{tour.name}</h3>
-            <p className="text-sm text-gray-600">{tour.location}</p>
-            <p className="text-sm text-gray-700">
-              Price: ${tour.price.toFixed(2)} | Duration: {tour.duration} day
-              {tour.duration > 1 ? 's' : ''}
-            </p>
+            <div className="flex-1 pr-4">
+              <h3 className="text-lg font-bold">{tour.name}</h3>
+              <p className="text-sm text-gray-600">{tour.location}</p>
+              <p className="text-sm text-gray-700">
+                Price: ${tour.price.toFixed(2)} | Duration: {tour.duration} day
+                {tour.duration > 1 ? 's' : ''}
+              </p>
+            </div>
+
+            {tour.imageUrl && (
+              <img
+                src={tour.imageUrl}
+                alt={tour.name}
+                className="w-32 h-24 object-cover rounded"
+              />
+            )}
           </div>
         ))}
       </div>

@@ -3,20 +3,17 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { createTour } from '@/lib/api';
 import { CreateTourFormData, createTourSchema } from '@/lib/schemas';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 
 const CreateTour = () => {
-  const { data: session } = useSession();
   const router = useRouter();
 
   const queryClient = useQueryClient();
   const { mutate: createNewTour, isPending } = useMutation({
-    mutationFn: (data: FormData) =>
-      createTour({ data, token: session?.accessToken || '' }),
+    mutationFn: (data: FormData) => createTour({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tours'] });
       toast.success('Tour created successfully!');
@@ -32,13 +29,14 @@ const CreateTour = () => {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<CreateTourFormData>({
     resolver: zodResolver(createTourSchema),
   });
 
   const onSubmit = async (data: CreateTourFormData) => {
-    console.log('data', data);
+    // console.log('data', data);
     const formData = new FormData();
 
     formData.append('name', data.name);
@@ -53,58 +51,65 @@ const CreateTour = () => {
     } catch (error) {
       console.log('error', error);
       alert('Failed to create tour');
-    } finally {
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">Create New Tour</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label className="font-bold">Name</label>
-          <input
-            {...register('name')}
-            className="w-full p-2 border rounded-sm"
-          />
-          {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="font-bold">Name</label>
+            <input
+              {...register('name')}
+              className="w-full p-2 border rounded-sm"
+            />
+            {errors.name && (
+              <p className="text-red-500">{errors.name.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="font-bold">Location</label>
+            <input
+              {...register('location')}
+              className="w-full p-2 border rounded-sm"
+            />
+            {errors.location && (
+              <p className="text-red-500">{errors.location.message}</p>
+            )}
+          </div>
         </div>
 
-        <div>
-          <label className="font-bold">Location</label>
-          <input
-            {...register('location')}
-            className="w-full p-2 border rounded-sm"
-          />
-          {errors.location && (
-            <p className="text-red-500">{errors.location.message}</p>
-          )}
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="font-bold">Price</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              {...register('price', { valueAsNumber: true })}
+              className="w-full p-2 border rounded-sm"
+            />
+            {errors.price && (
+              <p className="text-red-500">{errors.price.message}</p>
+            )}
+          </div>
 
-        <div>
-          <label className="font-bold">Price</label>
-          <input
-            type="number"
-            step="0.01"
-            {...register('price', { valueAsNumber: true })}
-            className="w-full p-2 border rounded-sm"
-          />
-          {errors.price && (
-            <p className="text-red-500">{errors.price.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="font-bold">Duration (days)</label>
-          <input
-            type="number"
-            {...register('duration', { valueAsNumber: true })}
-            className="w-full p-2 border rounded-sm"
-          />
-          {errors.duration && (
-            <p className="text-red-500">{errors.duration.message}</p>
-          )}
+          <div>
+            <label className="font-bold">Duration (days)</label>
+            <input
+              type="number"
+              min="0"
+              {...register('duration', { valueAsNumber: true })}
+              className="w-full p-2 border rounded-sm"
+            />
+            {errors.duration && (
+              <p className="text-red-500">{errors.duration.message}</p>
+            )}
+          </div>
         </div>
 
         <div>
@@ -132,9 +137,17 @@ const CreateTour = () => {
               file:bg-blue-50 file:text-blue-700
               hover:file:bg-blue-100"
           />
-          {typeof errors?.image?.message === 'string'
-            ? errors.image.message
-            : 'Invalid file'}
+          {watch('image') && watch('image')[0] && (
+            <img
+              src={URL.createObjectURL(watch('image')[0])}
+              alt="Selected preview"
+              className="w-full rounded mb-2 mt-1 max-h-60 object-cover"
+            />
+          )}
+          {errors.image?.message &&
+            typeof errors.image?.message === 'string' && (
+              <p className="text-red-500">{errors.image.message}</p>
+            )}
         </div>
 
         <button

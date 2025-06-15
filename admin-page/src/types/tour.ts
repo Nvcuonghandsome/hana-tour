@@ -5,4 +5,9 @@ export type Tour = {
   location: string;
   price: number;
   duration: number;
+  imageUrl: string;
+  imagePublicId: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
 };

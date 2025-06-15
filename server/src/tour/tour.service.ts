@@ -28,7 +28,6 @@ export class TourService {
     // create new tour
     const { secure_url, public_id } = result;
     const { name, description, location, price, duration } = body;
-    const parseDuration = parseFloat(duration);
     const newTour = await this.prisma.tour.create({
       data: {
         name,
@@ -49,8 +48,12 @@ export class TourService {
     };
   }
 
-  async updateTour(body: updateTourDto) {
-    // add image upload later
+  async updateTour(body: updateTourDto, file: Express.Multer.File) {
+    if (file && file.mimetype.startsWith('image/')) {
+      const result: any = await this.uploadTourImage(body.tourId, file);
+      if (!result) throw new BadRequestException('Upload image failed');
+    }
+
     const { tourId, name, description, location, price, duration } = body;
     const updatedTour = await this.prisma.tour.update({
       where: { id: tourId },
@@ -100,11 +103,8 @@ export class TourService {
     });
 
     return {
-      data: {
-        imageUrl: result['secure_url'],
-        imagePublicId: result['public_id'],
-      },
-      message: 'Upload image successfully!',
+      imageUrl: result['secure_url'],
+      imagePublicId: result['public_id'],
     };
   }
 
