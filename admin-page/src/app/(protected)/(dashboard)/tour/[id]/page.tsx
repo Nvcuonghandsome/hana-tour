@@ -65,7 +65,7 @@ const TourDetailPage = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">{tour.name}</h1>
+      <h1 className="text-xl font-bold">{tour.name}</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

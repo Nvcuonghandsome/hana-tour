@@ -109,10 +109,35 @@ export class TourService {
   }
 
   // get all tour belong to login user
-  async getTourList(userId: string) {
+  async getTourList(userId: string, search: string = '') {
     const tours = await this.prisma.tour.findMany({
       where: {
         userId,
+        ...(search && {
+          OR: [
+            {
+              name: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+            {
+              description: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+            {
+              location: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+          ],
+        }),
+      },
+      orderBy: {
+        name: 'asc',
       },
     });
 

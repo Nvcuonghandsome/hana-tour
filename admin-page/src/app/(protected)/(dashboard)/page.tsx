@@ -4,17 +4,19 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { fetchTours } from '@/lib/api';
+import { useSearchStore } from '@/lib/store/useSearchStore';
 
 const DashboardPage = () => {
   const router = useRouter();
+  const { debouncedSearch } = useSearchStore();
 
   const {
     data: tours,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ['tours'],
-    queryFn: () => fetchTours(),
+    queryKey: ['tours', debouncedSearch],
+    queryFn: () => fetchTours(debouncedSearch),
   });
 
   const goToTourDetail = (tourId: string) => {
@@ -33,7 +35,11 @@ const DashboardPage = () => {
         </Link>
       </div>
 
-      {isLoading && <p>Loading tours...</p>}
+      {isLoading && (
+        <div className="flex justify-center items-center py-10">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
       {isError && <p className="text-red-500">Failed to load tours.</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

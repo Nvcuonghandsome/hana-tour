@@ -23,8 +23,10 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-export const fetchTours = async (): Promise<Tour[]> => {
-  const res = await api.get(`${API_BASE}/tour/list`);
+export const fetchTours = async (search: string): Promise<Tour[]> => {
+  const res = await api.get(
+    `${API_BASE}/tour/list?search=${encodeURIComponent(search)}`,
+  );
   return res.data.data;
 };
 

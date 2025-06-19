@@ -5,6 +5,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -59,7 +60,8 @@ export class TourController {
   }
 
   @Get('list')
-  getTourList(@GetUser('id') userId: string) {
-    return this.tourService.getTourList(userId);
+  getTourList(@GetUser('id') userId: string, @Query('search') search: string) {
+    console.log('getTourList', { userId, search });
+    return this.tourService.getTourList(userId, search);
   }
 }
